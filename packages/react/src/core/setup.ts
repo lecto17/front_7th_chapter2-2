@@ -13,7 +13,27 @@ import { render } from "./render";
 export const setup = (rootNode: VNode | null, container: HTMLElement): void => {
   // 여기를 구현하세요.
   // 1. 컨테이너 유효성을 검사합니다.
+  if (!(container instanceof HTMLElement) || rootNode === null) {
+    throw new Error("컨테이너가 없습니다");
+  }
+
+  const {
+    root: { container: prevContainer, instance: prevInstance },
+  } = context;
+
   // 2. 이전 렌더링 내용을 정리하고 컨테이너를 비웁니다.
+  if (prevContainer && prevInstance) {
+    removeInstance(prevContainer, prevInstance);
+  }
+
+  cleanupUnusedHooks();
+  container.replaceChildren();
+
   // 3. 루트 컨텍스트와 훅 컨텍스트를 리셋합니다.
+  context.root.reset({ container, node: rootNode });
+  context.hooks.clear();
+  context.effects.queue.length = 0;
+
   // 4. 첫 렌더링을 실행합니다.
+  render();
 };
