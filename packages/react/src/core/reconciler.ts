@@ -83,6 +83,7 @@ export const reconcile = (
       // 컴포넌트 경로를 스택에 추가
       context.hooks.componentStack.push(path);
       context.hooks.cursor.set(path, 0);
+      context.hooks.visited.add(path); // 이 컴포넌트가 렌더링되었음을 기록
 
       try {
         // 컴포넌트 함수 실행
@@ -192,6 +193,7 @@ export const reconcile = (
     context.hooks.componentStack.push(path);
     const prevCursor = context.hooks.cursor.get(path) || 0;
     context.hooks.cursor.set(path, 0);
+    context.hooks.visited.add(path); // 이 컴포넌트가 렌더링되었음을 기록
 
     try {
       // 컴포넌트 함수 재실행
