@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { NodeType, NodeTypes } from "./constants";
+import { NodeTypes } from "./constants";
 import { Instance } from "./types";
 
 /**
@@ -31,13 +31,17 @@ export const setDomProps = (dom: HTMLElement, props: Record<string, any>): void 
         dom.setAttribute("class", value);
       }
     } else if (key === "style" && typeof value === "object") {
-      // 스타일 객체 처리
+      // 스타일 객체 처리 - camelCase 속성을 직접 할당
       if (dom instanceof HTMLElement) {
         Object.keys(value).forEach((styleKey) => {
-          dom.style.setProperty(styleKey, value[styleKey]);
+          (dom.style as any)[styleKey] = value[styleKey];
         });
       }
+    } else if (key in dom) {
+      // DOM 프로퍼티로 설정 (boolean 속성 등)
+      (dom as any)[key] = value;
     } else {
+      // 일반 HTML 속성
       if (dom instanceof Element) {
         dom.setAttribute(key, value);
       }
@@ -66,7 +70,6 @@ export const updateDomProps = (
 
   try {
     // 이전 속성 제거
-    // getAttributeNames()는 Element에만 있으므로 안전하게 사용 가능
     const prevKeys = Object.keys(prevProps);
     const nextKeys = Object.keys(nextProps);
 
@@ -84,12 +87,15 @@ export const updateDomProps = (
             dom.removeAttribute("class");
           }
         } else if (key === "style" && typeof prevProps[key] === "object") {
-          // 스타일 객체의 모든 속성 제거
+          // 스타일 객체의 모든 속성 제거 - 직접 할당 방식
           if (dom instanceof HTMLElement) {
             Object.keys(prevProps[key]).forEach((styleKey) => {
-              dom.style.removeProperty(styleKey);
+              (dom.style as any)[styleKey] = "";
             });
           }
+        } else if (key in dom) {
+          // DOM 프로퍼티 초기화 (boolean 속성 등)
+          (dom as any)[key] = undefined;
         } else {
           if (dom instanceof Element) {
             dom.removeAttribute(key);
@@ -121,22 +127,26 @@ export const updateDomProps = (
           dom.setAttribute("class", nextValue);
         }
       } else if (key === "style" && typeof nextValue === "object") {
-        // 스타일 객체 처리
+        // 스타일 객체 처리 - camelCase 속성을 직접 할당
         if (dom instanceof HTMLElement) {
           if (prevValue && typeof prevValue === "object") {
             // 이전 스타일 속성 제거
             Object.keys(prevValue).forEach((styleKey) => {
               if (!(styleKey in nextValue)) {
-                dom.style.removeProperty(styleKey);
+                (dom.style as any)[styleKey] = "";
               }
             });
           }
           // 새로운 스타일 속성 설정
           Object.keys(nextValue).forEach((styleKey) => {
-            dom.style.setProperty(styleKey, nextValue[styleKey]);
+            (dom.style as any)[styleKey] = nextValue[styleKey];
           });
         }
+      } else if (key in dom) {
+        // DOM 프로퍼티로 설정 (boolean 속성 등)
+        (dom as any)[key] = nextValue;
       } else {
+        // 일반 HTML 속성
         if (dom instanceof Element) {
           dom.setAttribute(key, nextValue);
         }
@@ -163,18 +173,22 @@ export const getDomNodes = (instance: Instance | null): (HTMLElement | Text)[] =
 
   const nodes: (HTMLElement | Text)[] = [];
 
-  // 직접 DOM이 있으면 추가
-  if (instance.dom) {
-    nodes.push(instance.dom);
+  // Fragment나 Component는 dom이 있어도 자식들을 재귀적으로 수집해야 함
+  if (instance.kind === NodeTypes.FRAGMENT || instance.kind === NodeTypes.COMPONENT) {
+    if (instance.children) {
+      instance.children.forEach((child) => {
+        if (child) {
+          nodes.push(...getDomNodes(child));
+        }
+      });
+    }
+    return nodes;
   }
 
-  // 자식들의 DOM 노드들도 재귀적으로 수집
-  if (instance.children) {
-    instance.children.forEach((child) => {
-      if (child) {
-        nodes.push(...getDomNodes(child));
-      }
-    });
+  // 일반 DOM 요소는 직접 DOM만 반환 (자식은 이미 DOM 트리에 포함되어 있음)
+  if (instance.dom) {
+    nodes.push(instance.dom);
+    return nodes;
   }
 
   return nodes;
@@ -259,8 +273,9 @@ export const removeInstance = (parentDom: HTMLElement, instance: Instance | null
   const domNodes = getDomNodes(instance);
 
   domNodes.forEach((node) => {
-    if (node.parentNode === parentDom) {
-      parentDom.removeChild(node);
+    // parentNode가 있으면 제거 (parentDom과 일치 여부 상관없이)
+    if (node.parentNode) {
+      node.parentNode.removeChild(node);
     }
   });
 };
