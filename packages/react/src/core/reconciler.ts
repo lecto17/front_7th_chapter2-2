@@ -57,7 +57,7 @@ export const reconcile = (
     // Fragment 처리
     if (type === Fragment) {
       const children: (Instance | null)[] = [];
-      const childNodes = props.children || [];
+      const childNodes = props?.children || [];
 
       childNodes.forEach((child: VNode, index: number) => {
         const childPath = createChildPath(path, child.key, index, child.type, childNodes);
@@ -90,7 +90,7 @@ export const reconcile = (
         const childNode = Component(props);
 
         // 자식 VNode 재조정
-        const childInstance = reconcile(parentDom, null, childNode, path);
+        const childInstance = reconcile(parentDom, null, childNode, `${path}/c`);
 
         const newInstance: Instance = {
           kind: NodeTypes.COMPONENT,
@@ -123,7 +123,7 @@ export const reconcile = (
     setDomProps(dom, props);
 
     // 자식 처리
-    const childNodes = props.children || [];
+    const childNodes = props?.children || [];
     const children: (Instance | null)[] = [];
 
     childNodes.forEach((child: VNode, index: number) => {
@@ -161,7 +161,7 @@ export const reconcile = (
 
   // Fragment 업데이트
   if (type === Fragment) {
-    const childNodes = props.children || [];
+    const childNodes = props?.children || [];
     const newChildren: (Instance | null)[] = [];
     const oldChildren = instance.children || [];
 
@@ -201,7 +201,7 @@ export const reconcile = (
 
       // 자식 재조정
       const oldChildInstance = instance.children[0] || null;
-      const newChildInstance = reconcile(parentDom, oldChildInstance, childNode, path);
+      const newChildInstance = reconcile(parentDom, oldChildInstance, childNode, `${path}/c`);
 
       instance.children = newChildInstance ? [newChildInstance] : [];
       instance.dom = getFirstDom(newChildInstance);
@@ -230,7 +230,7 @@ export const reconcile = (
     }
     updateDomProps(instance.dom, instance.node.props, props);
 
-    const childNodes = props.children || [];
+    const childNodes = props?.children || [];
     const newChildren: (Instance | null)[] = [];
     const oldChildren = instance.children || [];
 

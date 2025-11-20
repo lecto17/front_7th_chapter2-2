@@ -17,6 +17,11 @@ export const setDomProps = (dom: HTMLElement, props: Record<string, any>): void 
     return;
   }
 
+  // props가 null 또는 undefined인 경우 처리
+  if (!props) {
+    return;
+  }
+
   Object.keys(props).forEach((key) => {
     if (key === "children") return; // children은 제외
 
