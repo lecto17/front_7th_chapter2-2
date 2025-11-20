@@ -2,7 +2,8 @@ import { context } from "./context";
 import { VNode } from "./types";
 import { removeInstance } from "./dom";
 import { cleanupUnusedHooks } from "./hooks";
-import { render } from "./render";
+import { render, flushEffects } from "./render";
+import { enqueue } from "../utils";
 
 /**
  * Mini-React 애플리케이션의 루트를 설정하고 첫 렌더링을 시작합니다.
@@ -31,9 +32,13 @@ export const setup = (rootNode: VNode | null, container: HTMLElement): void => {
 
   // 3. 루트 컨텍스트와 훅 컨텍스트를 리셋합니다.
   context.root.reset({ container, node: rootNode });
-  context.hooks.clear();
+  context.hooks.clear(); // cursor, visited, componentStack 초기화
+  context.hooks.state.clear(); // setup에서는 state도 완전히 초기화 (테스트 간 격리)
   context.effects.queue.length = 0;
 
   // 4. 첫 렌더링을 실행합니다.
   render();
+
+  // 5. 렌더링 이후 비동기적으로 effect를 실행합니다.
+  enqueue(flushEffects);
 };
