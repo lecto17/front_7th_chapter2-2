@@ -9,8 +9,9 @@ import { useMemo } from "./useMemo";
  * @param deps - 의존성 배열
  * @returns 메모이제이션된 콜백 함수
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useCallback = <T extends (...args: any[]) => any>(callback: T, deps: DependencyList): T => {
-  // 여기를 구현하세요.
-  // useMemo를 사용하여 구현할 수 있습니다.
-  return callback;
+  // useMemo를 사용하여 콜백 함수 자체를 메모이제이션합니다.
+  // deps가 변경되지 않으면 동일한 함수 참조를 반환합니다.
+  return useMemo(() => callback, deps);
 };
