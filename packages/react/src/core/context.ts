@@ -35,9 +35,8 @@ export const context: Context = {
      * 모든 훅 관련 상태를 초기화합니다.
      */
     clear() {
-      // 여기를 구현하세요.
-      // state, cursor, visited, componentStack을 모두 비웁니다.
-      this.state.clear();
+      // state는 렌더링 간에 유지되어야 하므로 clear하지 않습니다!
+      // cursor, visited, componentStack만 초기화합니다.
       this.cursor.clear();
       this.visited.clear();
       this.componentStack.length = 0;
