@@ -90,7 +90,8 @@ export const reconcile = (
         const childNode = Component(props);
 
         // 자식 VNode 재조정
-        const childInstance = reconcile(parentDom, null, childNode, `${path}/c`);
+        const childPath = childNode ? createChildPath(path, childNode.key, 0, childNode.type, [childNode]) : path;
+        const childInstance = reconcile(parentDom, null, childNode, childPath);
 
         const newInstance: Instance = {
           kind: NodeTypes.COMPONENT,
@@ -201,7 +202,8 @@ export const reconcile = (
 
       // 자식 재조정
       const oldChildInstance = instance.children[0] || null;
-      const newChildInstance = reconcile(parentDom, oldChildInstance, childNode, `${path}/c`);
+      const childPath = childNode ? createChildPath(path, childNode.key, 0, childNode.type, [childNode]) : path;
+      const newChildInstance = reconcile(parentDom, oldChildInstance, childNode, childPath);
 
       instance.children = newChildInstance ? [newChildInstance] : [];
       instance.dom = getFirstDom(newChildInstance);

@@ -50,7 +50,7 @@ export const render = (): void => {
   context.hooks.clear();
 
   // 2. reconcile 함수를 호출하여 루트 노드를 재조정합니다.
-  const newInstance = reconcile(root.container, root.instance, root.node, "0");
+  const newInstance = reconcile(root.container, root.instance, root.node, "");
 
   // 3. 새 인스턴스를 컨텍스트에 저장
   root.instance = newInstance;
